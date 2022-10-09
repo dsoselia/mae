@@ -299,7 +299,7 @@ def get_grad_norm_(parameters, norm_type: float = 2.0) -> torch.Tensor:
     return total_norm
 
 
-def save_model(args, epoch, model, model_without_ddp, optimizer, loss_scaler):
+def save_model(args, epoch, model, model_without_ddp, optimizers, loss_scaler):
     #test
     output_dir = Path(args.output_dir)
     epoch_name = str(epoch)
@@ -308,10 +308,10 @@ def save_model(args, epoch, model, model_without_ddp, optimizer, loss_scaler):
         for checkpoint_path in checkpoint_paths:
             to_save = {
                 'model': model_without_ddp.state_dict(),
-                'optimizer': optimizer.state_dict(),
                 'epoch': epoch,
                 'scaler': loss_scaler.state_dict(),
                 'args': args,
+                **{f'optimizer_{i}':op.state_dict()  for i, op in enumerate(optimizers)}
             }
 
             save_on_master(to_save, checkpoint_path)
@@ -321,7 +321,7 @@ def save_model(args, epoch, model, model_without_ddp, optimizer, loss_scaler):
                               epoch_name, client_state=client_state)
 
 
-def load_model(args, model_without_ddp, optimizer, loss_scaler):
+def load_model(args, model_without_ddp, optimizers, loss_scaler):
     if args.resume:
         if args.resume.startswith('https'):
             checkpoint = torch.hub.load_state_dict_from_url(
@@ -331,7 +331,8 @@ def load_model(args, model_without_ddp, optimizer, loss_scaler):
         model_without_ddp.load_state_dict(checkpoint['model'])
         print("Resume checkpoint %s" % args.resume)
         if 'optimizer' in checkpoint and 'epoch' in checkpoint and not (hasattr(args, 'eval') and args.eval):
-            optimizer.load_state_dict(checkpoint['optimizer'])
+            for i, op in enumerate(optimizers):
+                op.load_state_dict(checkpoint[f'optimizer_{i}'])
             args.start_epoch = checkpoint['epoch'] + 1
             if 'scaler' in checkpoint:
                 loss_scaler.load_state_dict(checkpoint['scaler'])
