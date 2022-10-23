@@ -116,7 +116,6 @@ class MaskedAutoencoderViT(nn.Module):
         p = self.patch_embed.patch_size[0]
         h = w = int(x.shape[1]**.5)
         assert h * w == x.shape[1]
-        c = imgs.shape[1]
 
         x = x.reshape(shape=(x.shape[0], h, w, p, p, self.c))
         x = torch.einsum('nhwpqc->nchpwq', x)
