@@ -42,6 +42,7 @@ class MaskedAutoencoderViT(nn.Module):
         super().__init__()
 
         self.masked_loss = masked_loss
+        self.img_size = img_size
 
         # --------------------------------------------------------------------------
         # MAE encoder specifics
