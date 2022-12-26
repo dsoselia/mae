@@ -275,7 +275,7 @@ class MaskedAutoencoderViT(nn.Module):
             loss = F.mse_loss(pred, target, reduction="mean")
         return loss
 
-    def forward(self, imgs, mask_ratio=0.75):
+    def forward(self, imgs, random=True, mask_ratio=0.75, **kwargs):
         latent, mask, ids_restore = self.forward_encoder(imgs, mask_ratio)
         pred = self.forward_decoder(latent, ids_restore)  # [N, L, p*p*3]
         loss = self.forward_loss(imgs, pred, mask)
@@ -323,6 +323,60 @@ def mae_vit_huge_patch14_dec512d8b(**kwargs):
         decoder_embed_dim=512,
         decoder_depth=8,
         decoder_num_heads=16,
+        mlp_ratio=4,
+        norm_layer=partial(nn.LayerNorm, eps=1e-6),
+        **kwargs
+    )
+    return model
+
+
+def mae_small_patch5(**kwargs):
+    model = MaskedAutoencoderViT(
+        img_size=50,
+        in_chans=3,
+        patch_size=5,
+        embed_dim=256,
+        depth=4,
+        num_heads=8,
+        decoder_embed_dim=128,
+        decoder_depth=4,
+        decoder_num_heads=8,
+        mlp_ratio=4,
+        norm_layer=partial(nn.LayerNorm, eps=1e-6),
+        **kwargs
+    )
+    return model
+
+
+def mae_MNIST_patch2(**kwargs):
+    model = MaskedAutoencoderViT(
+        img_size=28,
+        in_chans=1,
+        patch_size=2,
+        embed_dim=256,
+        depth=4,
+        num_heads=8,
+        decoder_embed_dim=128,
+        decoder_depth=4,
+        decoder_num_heads=8,
+        mlp_ratio=4,
+        norm_layer=partial(nn.LayerNorm, eps=1e-6),
+        **kwargs
+    )
+    return model
+
+
+def mae_FFHQ_patch16(**kwargs):
+    model = MaskedAutoencoderViT(
+        img_size=128,
+        in_chans=3,
+        patch_size=16,
+        embed_dim=768,
+        depth=4,
+        num_heads=8,
+        decoder_embed_dim=128,
+        decoder_depth=4,
+        decoder_num_heads=8,
         mlp_ratio=4,
         norm_layer=partial(nn.LayerNorm, eps=1e-6),
         **kwargs
