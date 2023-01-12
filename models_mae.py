@@ -273,13 +273,13 @@ class MaskedAutoencoderViT(nn.Module):
             loss = ((loss * mask).sum(dim=1) / mask.sum(dim=1)).mean()
         else:
             loss = F.mse_loss(pred, target, reduction="mean")
-        return loss
+        return loss, target
 
     def forward(self, imgs, random=True, mask_ratio=0.75, **kwargs):
         latent, mask, ids_restore = self.forward_encoder(imgs, mask_ratio)
         pred = self.forward_decoder(latent, ids_restore)  # [N, L, p*p*3]
-        loss = self.forward_loss(imgs, pred, mask)
-        return loss, pred, mask
+        loss, x_in = self.forward_loss(imgs, pred, mask)
+        return loss, pred, x_in, mask
 
 
 def mae_vit_base_patch16_dec512d8b(**kwargs):
