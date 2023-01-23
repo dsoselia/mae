@@ -384,6 +384,24 @@ def mae_FFHQ_patch16(**kwargs):
     return model
 
 
+def mae_Fluid_patch10(**kwargs):
+    model = MaskedAutoencoderViT(
+        img_size=100,
+        in_chans=3,
+        patch_size=10,
+        embed_dim=776,
+        depth=6,
+        num_heads=8,
+        decoder_embed_dim=160,
+        decoder_depth=6,
+        decoder_num_heads=8,
+        mlp_ratio=4,
+        norm_layer=partial(nn.LayerNorm, eps=1e-6),
+        **kwargs
+    )
+    return model
+
+
 def mae_celeba_patch16(**kwargs):
     model = MaskedAutoencoderViT(
         img_size=176,
