@@ -405,8 +405,8 @@ class ClassificationViT(MaskedAutoencoderViT):
             z = z[:, 1:, :].mean(dim=1)  # global pool without cls token
             z = self.fc_norm(z)
         else:
-            z = self.norm(z)
-            z = self.fc_norm[:, 0]
+            z = z[:, 0]
+            z = self.fc_norm(z)
 
         logits = self.head(z)
         returns = dict(
