@@ -414,6 +414,9 @@ class ClassificationViT(MaskedAutoencoderViT):
         )
         return returns
 
+    def no_weight_decay(self): 
+        return {'pos_embed', 'cls_token'} 
+
 
 def mae_vit_base_patch16_dec512d8b(**kwargs):
     model = MaskedAutoencoderViT(

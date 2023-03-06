@@ -20,7 +20,10 @@ def param_groups_lrd(model, weight_decay=0.05, no_weight_decay_list=[], layer_de
     param_group_names = {}
     param_groups = {}
 
-    num_layers = len(model.blocks) + 1
+    if hasattr(model, 'blocks'):
+        num_layers = len(model.blocks) + 1
+    elif hasattr(model, 'encoder'):
+        num_layers = len(model.encoder.blocks) + 1
 
     layer_scales = list(layer_decay ** (num_layers - i) for i in range(num_layers + 1))
 
@@ -70,7 +73,13 @@ def get_layer_id_for_vit(name, num_layers):
         return 0
     elif name.startswith('patch_embed'):
         return 0
+    elif 'patch_embed' in name:
+        return 0
+    elif 'gumbel_distrib' in name:
+        return 0
     elif name.startswith('blocks'):
         return int(name.split('.')[1]) + 1
+    elif name.startswith('encoder.blocks'):
+        return int(name.split('.')[2]) + 1
     else:
         return num_layers
