@@ -555,6 +555,22 @@ def mae_Fluid_10x_smaller(**kwargs):
     )
     return model
 
+def mae_Fluid_patch_5(**kwargs):
+    model = MaskedAutoencoderViT(
+        img_size=100,
+        in_chans=3,
+        patch_size=5,
+        embed_dim=168,
+        depth=4,
+        num_heads=8,
+        decoder_embed_dim=112,
+        decoder_depth=4,
+        decoder_num_heads=8,
+        mlp_ratio=4,
+        norm_layer=partial(nn.LayerNorm, eps=1e-6),
+        **kwargs
+    )
+    return model
 
 def mae_Fluid_15x_smaller(**kwargs):
     model = MaskedAutoencoderViT(
