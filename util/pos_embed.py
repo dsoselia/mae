@@ -17,18 +17,19 @@ import torch
 # Transformer: https://github.com/tensorflow/models/blob/master/official/nlp/transformer/model_utils.py
 # MoCo v3: https://github.com/facebookresearch/moco-v3
 # --------------------------------------------------------
-def get_2d_sincos_pos_embed(embed_dim, grid_size, cls_token=False):
+def get_2d_sincos_pos_embed(embed_dim, grid_size_h, grid_size_w, cls_token=False):
     """
-    grid_size: int of the grid height and width
+    grid_size_h: int for the grid height
+    grid_size_w: int for the grid width
     return:
-    pos_embed: [grid_size*grid_size, embed_dim] or [1+grid_size*grid_size, embed_dim] (w/ or w/o cls_token)
+    pos_embed: [grid_size_h * grid_size_w, embed_dim] or [1 + grid_size_h * grid_size_w, embed_dim] (w/ or w/o cls_token)
     """
-    grid_h = np.arange(grid_size, dtype=np.float32)
-    grid_w = np.arange(grid_size, dtype=np.float32)
+    grid_h = np.arange(grid_size_h, dtype=np.float32)
+    grid_w = np.arange(grid_size_w, dtype=np.float32)
     grid = np.meshgrid(grid_w, grid_h)  # here w goes first
     grid = np.stack(grid, axis=0)
 
-    grid = grid.reshape([2, 1, grid_size, grid_size])
+    grid = grid.reshape([2, 1, grid_size_h, grid_size_w])
     pos_embed = get_2d_sincos_pos_embed_from_grid(embed_dim, grid)
     if cls_token:
         pos_embed = np.concatenate([np.zeros([1, embed_dim]), pos_embed], axis=0)
@@ -42,7 +43,7 @@ def get_2d_sincos_pos_embed_from_grid(embed_dim, grid):
     emb_h = get_1d_sincos_pos_embed_from_grid(embed_dim // 2, grid[0])  # (H*W, D/2)
     emb_w = get_1d_sincos_pos_embed_from_grid(embed_dim // 2, grid[1])  # (H*W, D/2)
 
-    emb = np.concatenate([emb_h, emb_w], axis=1) # (H*W, D)
+    emb = np.concatenate([emb_h, emb_w], axis=1)  # (H*W, D)
     return emb
 
 
@@ -60,11 +61,12 @@ def get_1d_sincos_pos_embed_from_grid(embed_dim, pos):
     pos = pos.reshape(-1)  # (M,)
     out = np.einsum('m,d->md', pos, omega)  # (M, D/2), outer product
 
-    emb_sin = np.sin(out) # (M, D/2)
-    emb_cos = np.cos(out) # (M, D/2)
+    emb_sin = np.sin(out)  # (M, D/2)
+    emb_cos = np.cos(out)  # (M, D/2)
 
     emb = np.concatenate([emb_sin, emb_cos], axis=1)  # (M, D)
     return emb
+
 
 
 # --------------------------------------------------------
