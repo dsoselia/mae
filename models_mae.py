@@ -253,31 +253,16 @@ class MaskedAutoencoderViT(nn.Module):
 
         return x
 
-    def forward_loss(self, imgs, pred, mask):
-        """
-        imgs: [N, 3, H, W]
-        pred: [N, L, p*p*3]
-        mask: [N, L], 0 is keep, 1 is remove,
-        """
-        target = self.patchify(imgs)
-        if self.norm_pix_loss:
-            mean = target.mean(dim=-1, keepdim=True)
-            var = target.var(dim=-1, keepdim=True)
-            target = (target - mean) / (var + 1.0e-6) ** 0.5
-
-        if self.masked_loss:
-            loss = (pred - target) ** 2
-            loss = loss.mean(dim=-1)  # [N, L], mean loss per patch
-            loss = ((loss * mask).sum(dim=1) / mask.sum(dim=1)).mean()
-        else:
-            loss = F.mse_loss(pred, target, reduction="mean")
-        return loss, target
-
-    def forward(self, imgs, random=True, mask_ratio=0.75, **kwargs):
+    def forward(self, imgs, mask_ratio=0.75, **kwargs):
         latent, mask, ids_restore = self.forward_encoder(imgs, mask_ratio)
         pred = self.forward_decoder(latent, ids_restore)  # [N, L, p*p*3]
-        loss, x_in = self.forward_loss(imgs, pred, mask)
-        return loss, pred, x_in, mask
+        x_in = self.patchify(imgs)
+        returns = {
+            "x_in": x_in,
+            "x_pred": pred,
+            "mask": mask
+        }
+        return returns
 
 
 class ClassificationViT(MaskedAutoencoderViT):
