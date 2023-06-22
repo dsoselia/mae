@@ -13,14 +13,13 @@ from functools import partial
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-
+import pytorch_lightning as pl
 from timm.models.vision_transformer import PatchEmbed, Block
 
 from util.pos_embed import get_2d_sincos_pos_embed
 
 
-class MaskedAutoencoderViT(nn.Module):
+class MaskedAutoencoderViT(pl.LightningModule):
     """Masked Autoencoder with VisionTransformer backbone"""
 
     def __init__(
@@ -181,7 +180,7 @@ class MaskedAutoencoderViT(nn.Module):
         N, L, D = x.shape  # batch, length, dim
         len_keep = int(L * (1 - mask_ratio))
 
-        noise = torch.rand(N, L, device=x.device)  # noise in [0, 1]
+        noise = torch.rand(N, L, device=self.device)  # noise in [0, 1]
 
         # sort noise for each sample
         ids_shuffle = torch.argsort(
@@ -194,7 +193,7 @@ class MaskedAutoencoderViT(nn.Module):
         x_masked = torch.gather(x, dim=1, index=ids_keep.unsqueeze(-1).repeat(1, 1, D))
 
         # generate the binary mask: 0 is keep, 1 is remove
-        mask = torch.ones([N, L], device=x.device)
+        mask = torch.ones([N, L], device=self.device)
         mask[:, :len_keep] = 0
         # unshuffle to get the binary mask
         mask = torch.gather(mask, dim=1, index=ids_restore)
